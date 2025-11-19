@@ -2,6 +2,7 @@ package com.vectorgarman.civiconnect.controller;
 
 // Estos van a ser mis endpoints.
 
+import com.vectorgarman.civiconnect.dto.LoginRequest;
 import com.vectorgarman.civiconnect.dto.Ubicacion;
 import com.vectorgarman.civiconnect.entity.Usuario;
 import com.vectorgarman.civiconnect.service.UsuarioService;
@@ -18,6 +19,9 @@ public class UsuarioController {
     public UsuarioController(UsuarioService service) {
         this.service = service;
     }
+
+    @PostMapping("/login")
+    public Usuario login(@RequestBody LoginRequest request) { return service; }
 
     @PostMapping("/crear")
     public Usuario crear(@RequestBody Usuario usuario) {

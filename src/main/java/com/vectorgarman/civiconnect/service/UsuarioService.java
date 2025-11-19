@@ -31,4 +31,10 @@ public class UsuarioService {
     public Ubicacion obtenerUbicacion(Long idusuario) {
         return usuarioRepository.obtenerUbicacionPorUsuario(idusuario);
     }
+
+    public Usuario login(String email, String contrasena) {
+        Usuario usuarioEncontrado = usuarioRepository.findByEmail(email);
+
+        if(usuarioEncontrado.getContrasena().equals())
+    }
 }

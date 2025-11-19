@@ -24,4 +24,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
         WHERE u.idusuario = :idusuario
         """)
     Ubicacion obtenerUbicacionPorUsuario(Long idusuario);
+
+
+    Usuario findByEmail(String email);
 }
