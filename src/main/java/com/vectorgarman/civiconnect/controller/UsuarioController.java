@@ -8,7 +8,6 @@ import com.vectorgarman.civiconnect.dto.Ubicacion;
 import com.vectorgarman.civiconnect.dto.UsuarioDto;
 import com.vectorgarman.civiconnect.entity.Usuario;
 import com.vectorgarman.civiconnect.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,17 +30,17 @@ public class UsuarioController {
     }
 
     @PostMapping("/crear")
-    public Usuario crear(@RequestBody Usuario usuario) {
+    public ResponseEntity<ApiResponse<Usuario>> crear(@RequestBody Usuario usuario) {
         return service.crear(usuario);
     }
 
     @GetMapping("/obtener")
-    public List<Usuario> list(){
+    public ResponseEntity<ApiResponse<List<Usuario>>> list(){
         return service.findAll();
     }
 
     @GetMapping("/obtener/{idusuario}")
-    public Usuario obtener(@PathVariable Long idusuario) {
+    public ResponseEntity<ApiResponse<Usuario>> obtener(@PathVariable Long idusuario) {
         return service.getById(idusuario);
     }
 
