@@ -46,7 +46,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/ubicacion/{idusuario}")
-    public Ubicacion obtenerUbicacion(@PathVariable Long idusuario) {
+    public ResponseEntity<ApiResponse<Ubicacion>> obtenerUbicacion(@PathVariable Long idusuario) {
         return service.obtenerUbicacion(idusuario);
     }
 }

@@ -34,9 +34,29 @@ public class UsuarioService {
         return usuarioRepository.findById(idusuario).orElse(null);
     }
 
-    public Ubicacion obtenerUbicacion(Long idusuario) {
-        return usuarioRepository.obtenerUbicacionPorUsuario(idusuario);
+    public ResponseEntity<ApiResponse<Ubicacion>> obtenerUbicacion(Long idusuario) {
+
+        Ubicacion ubicacion = usuarioRepository.obtenerUbicacionPorUsuario(idusuario);
+
+        if (ubicacion == null) {
+            ApiResponse<Ubicacion> res = new ApiResponse<>(
+                    "ERROR",
+                    "Ubicación no encontrada.",
+                    "No existe una ubicación registrada para este usuario.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+
+        ApiResponse<Ubicacion> res = new ApiResponse<>(
+                "OK",
+                "Ubicación obtenida correctamente.",
+                null,
+                ubicacion
+        );
+        return ResponseEntity.status(HttpStatus.OK).body(res);
     }
+
 
     public ResponseEntity<ApiResponse<Optional<UsuarioDto>>> login(LoginRequest loginRequest) {
         Optional<UsuarioDto> usuarioEncontrado =
@@ -53,23 +73,23 @@ public class UsuarioService {
         if (usuarioEncontrado.isEmpty()) {
             ApiResponse<Optional<UsuarioDto>> res = new ApiResponse<>(
                     "ERROR",
-                    "Credenciales incorrectas",
-                    "Usuario no encontrado",
+                    "Credenciales incorrectas.",
+                    "Usuario o contraseña incorrectos.",
                     null
             );
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
         } else if (verificacionGubernamental) {
             ApiResponse<Optional<UsuarioDto>> res = new ApiResponse<>(
                     "WARNING",
-                    "Usuario gubernamental no verificado",
-                    "Verificación pendiente",
+                    "Usuario gubernamental no verificado.",
+                    "Verificación pendiente.",
                     null
             );
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
         } else {
             ApiResponse<Optional<UsuarioDto>> res = new ApiResponse<>(
                     "OK",
-                    "Inicio de sesión exitoso",
+                    "Inicio de sesión exitoso.",
                     null,
                     usuarioEncontrado
             );
