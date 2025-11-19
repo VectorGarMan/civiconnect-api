@@ -1,52 +1,27 @@
-package com.vectorgarman.civiconnect.entity;
-
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+package com.vectorgarman.civiconnect.dto;
 
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "usuario")
-public class Usuario {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class UsuarioDto {
     private Long idusuario;
-
-    @Column(nullable = false)
     private Long idtipousuario;
-
-    @Column(nullable = false)
     private Long idcolonia;
-
-    @Column(nullable = false)
+    private String nombreusuario;
+    private LocalDate fecharegistro = LocalDate.now();
+    private Boolean empleadogubverificado;
     private String email;
 
-    @Column(nullable = false)
-    private String contrasena;
+    public UsuarioDto() {
+    }
 
-    @Column(nullable = false)
-    private String nombreusuario;
-
-    @Column(nullable = false)
-    private LocalDate fecharegistro = LocalDate.now();
-
-    @Column(nullable = true)
-    private Boolean empleadogubverificado;
-
-    public Usuario(Long idusuario, Long idtipousuario, Long idcolonia, String email, String contrasena, String nombreusuario, LocalDate fecharegistro, Boolean empleadogubverificado) {
+    public UsuarioDto(Long idusuario, Long idtipousuario, Long idcolonia, String nombreusuario, LocalDate fecharegistro, Boolean empleadogubverificado, String email) {
         this.idusuario = idusuario;
         this.idtipousuario = idtipousuario;
         this.idcolonia = idcolonia;
-        this.email = email;
-        this.contrasena = contrasena;
         this.nombreusuario = nombreusuario;
         this.fecharegistro = fecharegistro;
         this.empleadogubverificado = empleadogubverificado;
-    }
-
-    public Usuario() {
+        this.email = email;
     }
 
     public Long getIdusuario() {
@@ -73,22 +48,6 @@ public class Usuario {
         this.idcolonia = idcolonia;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getContrasena() {
-        return contrasena;
-    }
-
-    public void setContrasena(String contrasena) {
-        this.contrasena = contrasena;
-    }
-
     public String getNombreusuario() {
         return nombreusuario;
     }
@@ -111,5 +70,13 @@ public class Usuario {
 
     public void setEmpleadogubverificado(Boolean empleadogubverificado) {
         this.empleadogubverificado = empleadogubverificado;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

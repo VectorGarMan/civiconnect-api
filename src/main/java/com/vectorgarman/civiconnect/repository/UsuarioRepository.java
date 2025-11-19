@@ -1,10 +1,13 @@
 package com.vectorgarman.civiconnect.repository;
 
 import com.vectorgarman.civiconnect.dto.Ubicacion;
+import com.vectorgarman.civiconnect.dto.UsuarioDto;
 import com.vectorgarman.civiconnect.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
@@ -25,6 +28,19 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
         """)
     Ubicacion obtenerUbicacionPorUsuario(Long idusuario);
 
-
-    Usuario findByEmail(String email);
+    @Query("""
+        SELECT new com.vectorgarman.civiconnect.dto.UsuarioDto(
+            u.idusuario,
+            u.idtipousuario,
+            u.idcolonia,
+            u.nombreusuario,
+            u.fecharegistro,
+            u.empleadogubverificado,
+            u.email
+        )
+        FROM Usuario u
+        WHERE u.email = :email
+        AND u.contrasena = :contrasena
+    """)
+    Optional<UsuarioDto> findByEmailAndContrasena(String email, String contrasena);
 }

@@ -2,13 +2,18 @@ package com.vectorgarman.civiconnect.controller;
 
 // Estos van a ser mis endpoints.
 
+import com.vectorgarman.civiconnect.dto.ApiResponse;
 import com.vectorgarman.civiconnect.dto.LoginRequest;
 import com.vectorgarman.civiconnect.dto.Ubicacion;
+import com.vectorgarman.civiconnect.dto.UsuarioDto;
 import com.vectorgarman.civiconnect.entity.Usuario;
 import com.vectorgarman.civiconnect.service.UsuarioService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -21,7 +26,9 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public Usuario login(@RequestBody LoginRequest request) { return service; }
+    public ResponseEntity<ApiResponse<Optional<UsuarioDto>>> login(@RequestBody LoginRequest request) {
+        return service.login(request);
+    }
 
     @PostMapping("/crear")
     public Usuario crear(@RequestBody Usuario usuario) {
