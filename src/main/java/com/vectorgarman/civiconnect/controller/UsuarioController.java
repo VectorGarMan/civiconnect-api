@@ -48,4 +48,9 @@ public class UsuarioController {
     public ResponseEntity<ApiResponse<Ubicacion>> obtenerUbicacion(@PathVariable Long idusuario) {
         return service.obtenerUbicacion(idusuario);
     }
+
+    @GetMapping("/verificarGubernamental")
+    public ResponseEntity<String> verificarGubernamental(@RequestParam String email, String token) {
+        return service.verificarGubernamental(email, token);
+    }
 }

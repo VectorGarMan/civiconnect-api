@@ -6,6 +6,9 @@ import com.vectorgarman.civiconnect.dto.Ubicacion;
 import com.vectorgarman.civiconnect.dto.UsuarioDto;
 import com.vectorgarman.civiconnect.entity.Usuario;
 import com.vectorgarman.civiconnect.repository.UsuarioRepository;
+import com.vectorgarman.civiconnect.template.VerificarGubernamentalTemplateEnum;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +20,29 @@ import java.util.Optional;
 @Service
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    @Autowired
+    private MailService mailService;
+    @Autowired
+    private TokenService tokenService;
 
-    public UsuarioService(UsuarioRepository repository) {
-        this.usuarioRepository = repository;
+    @Value("${spring.mail.destinatarioVerifGub}")
+    private String destinatarioVerifGub;
+
+    private void verificarGubernamental (Usuario usuario) {
+        String destinatario = this.destinatarioVerifGub;
+        String asunto = "CiviConnect - Verificar Usuario Gubernamental";
+
+        String token = tokenService.generarTokenVerificacion(usuario.getEmail());
+        String urlVerificacion = "http://localhost:8080/api/usuarios/verificarGubernamental?email=" + usuario.getEmail() + "&token=" + token;
+
+        String mensaje = VerificarGubernamentalTemplateEnum.VERIFICACION_GUBERNAMENTAL.build(
+                "EMAIL", usuario.getEmail(),
+                "URL_VERIFICACION", urlVerificacion
+        );
+
+        mailService.enviarCorreo(destinatario, asunto, mensaje);
     }
 
     public ResponseEntity<ApiResponse<Usuario>> crear(Usuario usuario) {
@@ -33,6 +55,8 @@ public class UsuarioService {
                     null,
                     usuarioResponse
             );
+
+            verificarGubernamental(usuarioResponse);
 
             return ResponseEntity.status(HttpStatus.OK).body(res);
 
@@ -165,5 +189,27 @@ public class UsuarioService {
             );
             return ResponseEntity.status(HttpStatus.OK).body(res);
         }
+    }
+
+    public ResponseEntity<String> verificarGubernamental(String email, String token) {
+        String tokenEmail = tokenService.validarToken(token);
+        boolean isTokenEmailValid = email.equalsIgnoreCase(tokenEmail);
+        boolean isTokenExpired = tokenService.tokenExpirado(token);
+
+        String htmlVerificacionExitosa = VerificarGubernamentalTemplateEnum.VERIFICACION_EXITOSA.build(
+                "EMAIL", email
+        );
+
+        String htmlVerificacionError = VerificarGubernamentalTemplateEnum.VERIFICACION_ERROR.build(
+                "MENSAJE_ERROR", "Ocurrió un error al tratar de verificar el email: " + email
+        );
+
+        if(!isTokenExpired && isTokenEmailValid) {
+            int filasAfectadas = usuarioRepository.actualizarEmpleadoGubVerificado(email, true);
+            if (filasAfectadas >= 0) {
+                return ResponseEntity.status(HttpStatus.OK).body(htmlVerificacionExitosa);
+            }
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(htmlVerificacionError);
     }
 }

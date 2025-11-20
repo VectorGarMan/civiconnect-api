@@ -4,8 +4,10 @@ import com.vectorgarman.civiconnect.dto.Ubicacion;
 import com.vectorgarman.civiconnect.dto.UsuarioDto;
 import com.vectorgarman.civiconnect.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -43,4 +45,14 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
         AND u.contrasena = :contrasena
     """)
     Optional<UsuarioDto> findByEmailAndContrasena(String email, String contrasena);
+
+    @Modifying
+    @Transactional
+    @Query("""
+    UPDATE Usuario u
+    SET u.empleadogubverificado = :valor
+    WHERE u.email = :email
+    """)
+    int actualizarEmpleadoGubVerificado(String email, Boolean valor);
+
 }
