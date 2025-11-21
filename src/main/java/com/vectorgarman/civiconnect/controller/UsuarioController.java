@@ -3,6 +3,7 @@ package com.vectorgarman.civiconnect.controller;
 // Estos van a ser mis endpoints.
 
 import com.vectorgarman.civiconnect.dto.*;
+import com.vectorgarman.civiconnect.entity.TipoUsuario;
 import com.vectorgarman.civiconnect.entity.Usuario;
 import com.vectorgarman.civiconnect.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,5 +58,10 @@ public class UsuarioController {
     @PostMapping("/cambiarContrasena")
     public ResponseEntity<ApiResponse<?>> cambiarContrasena(@RequestBody CambioContrasenaRequest cambioContrasenaRequest) {
         return service.cambiarContrasena(cambioContrasenaRequest);
+    }
+
+    @GetMapping("/tipoUsuario/obtener")
+    public ResponseEntity<ApiResponse<List<TipoUsuario>>> listTipoUsuario(){
+        return service.findAllTipoUsuario();
     }
 }

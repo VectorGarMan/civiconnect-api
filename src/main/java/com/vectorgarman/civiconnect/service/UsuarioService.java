@@ -1,7 +1,9 @@
 package com.vectorgarman.civiconnect.service;
 
 import com.vectorgarman.civiconnect.dto.*;
+import com.vectorgarman.civiconnect.entity.TipoUsuario;
 import com.vectorgarman.civiconnect.entity.Usuario;
+import com.vectorgarman.civiconnect.repository.TipoUsuarioRepository;
 import com.vectorgarman.civiconnect.repository.UsuarioRepository;
 import com.vectorgarman.civiconnect.template.VerificarGubernamentalTemplateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ public class UsuarioService {
     private MailService mailService;
     @Autowired
     private TokenService tokenService;
+
+    @Autowired
+    private TipoUsuarioRepository tipoUsuarioRepository;
 
     @Value("${spring.mail.destinatarioVerifGub}")
     private String destinatarioVerifGub;
@@ -274,5 +279,28 @@ public class UsuarioService {
                 null
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+    }
+
+    public ResponseEntity<ApiResponse<List<TipoUsuario>>> findAllTipoUsuario() {
+        List<TipoUsuario> listTiposUsuario = tipoUsuarioRepository.findAll();
+
+        if (listTiposUsuario.isEmpty()) {
+            ApiResponse<List<TipoUsuario>> res = new ApiResponse<>(
+                    "ERROR",
+                    "No se encontraron tipos de usuario.",
+                    "La base de datos no tiene registros de tipos de usuario.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+
+        ApiResponse<List<TipoUsuario>> res = new ApiResponse<>(
+                "OK",
+                "Tipos de usuario obtenidos correctamente.",
+                null,
+                listTiposUsuario
+        );
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 }
