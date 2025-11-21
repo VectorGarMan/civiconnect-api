@@ -1,14 +1,18 @@
 package com.vectorgarman.civiconnect.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "estado")
 public class Estado {
     @Id
     private Long idestado;
-    private String nombre;
+
+    @Column(nullable = false)
     private String codigo;
+
+    @Column(nullable = false)
+    private String nombre;
 }

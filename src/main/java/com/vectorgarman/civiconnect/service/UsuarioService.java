@@ -1,9 +1,6 @@
 package com.vectorgarman.civiconnect.service;
 
-import com.vectorgarman.civiconnect.dto.ApiResponse;
-import com.vectorgarman.civiconnect.dto.LoginRequest;
-import com.vectorgarman.civiconnect.dto.Ubicacion;
-import com.vectorgarman.civiconnect.dto.UsuarioDto;
+import com.vectorgarman.civiconnect.dto.*;
 import com.vectorgarman.civiconnect.entity.Usuario;
 import com.vectorgarman.civiconnect.repository.UsuarioRepository;
 import com.vectorgarman.civiconnect.template.VerificarGubernamentalTemplateEnum;
@@ -30,11 +27,13 @@ public class UsuarioService {
     @Value("${spring.mail.destinatarioVerifGub}")
     private String destinatarioVerifGub;
 
-    private void verificarGubernamental (Usuario usuario) {
+    private void verificarGubernamentalEnviarCorreo(Usuario usuario) {
         String destinatario = this.destinatarioVerifGub;
         String asunto = "CiviConnect - Verificar Usuario Gubernamental";
 
-        String token = tokenService.generarTokenVerificacion(usuario.getEmail());
+        long duracion48Horas = 48 * 60 * 60 * 1000; // 48 horas en milisegundos
+
+        String token = tokenService.generarTokenVerificacion(usuario.getEmail(), duracion48Horas);
         String urlVerificacion = "http://localhost:8080/api/usuarios/verificarGubernamental?email=" + usuario.getEmail() + "&token=" + token;
 
         String mensaje = VerificarGubernamentalTemplateEnum.VERIFICACION_GUBERNAMENTAL.build(
@@ -56,7 +55,9 @@ public class UsuarioService {
                     usuarioResponse
             );
 
-            verificarGubernamental(usuarioResponse);
+            if(usuarioResponse.getIdtipousuario().equals(2L)){
+                verificarGubernamentalEnviarCorreo(usuarioResponse);
+            }
 
             return ResponseEntity.status(HttpStatus.OK).body(res);
 
@@ -191,7 +192,7 @@ public class UsuarioService {
         }
     }
 
-    public ResponseEntity<String> verificarGubernamental(String email, String token) {
+    public ResponseEntity<String> verificarGubernamentalValidToken(String email, String token) {
         String tokenEmail = tokenService.validarToken(token);
         boolean isTokenEmailValid = email.equalsIgnoreCase(tokenEmail);
         boolean isTokenExpired = tokenService.tokenExpirado(token);
@@ -211,5 +212,67 @@ public class UsuarioService {
             }
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(htmlVerificacionError);
+    }
+
+    public ResponseEntity<ApiResponse<Optional<Usuario>>> verificarCambioContrasena (String email) {
+        Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
+
+        if(usuario.isEmpty()){
+            ApiResponse<Optional<Usuario>> res = new ApiResponse<>(
+                    "ERROR",
+                    "No fue posible recuperar un usuario con el email dado.",
+                    "Usuario no encontrado.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+        ApiResponse<Optional<Usuario>> res = new ApiResponse<>(
+                "OK",
+                "Usuario recuperado con el email dado.",
+                "Usuario encontrado.",
+                usuario
+        );
+
+        String destinatario = usuario.get().getEmail();
+        String asunto = "CiviConnect - Solicitud de Cambio de Contraseña";
+
+        long duracion15Minutos = 15 * 60 * 1000; // 15 minutos en milisegundos
+
+        String token = tokenService.generarTokenVerificacion(usuario.get().getEmail(), duracion15Minutos);
+
+        String mensaje = VerificarGubernamentalTemplateEnum.VERIFICACION_CAMBIO_CONTRASENA.build(
+                "EMAIL", usuario.get().getEmail(),
+                "TOKEN", token
+        );
+
+        mailService.enviarCorreo(destinatario, asunto, mensaje);
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    public ResponseEntity<ApiResponse<?>> cambiarContrasena (CambioContrasenaRequest cambioContrasenaRequest) {
+        String tokenEmail = tokenService.validarToken(cambioContrasenaRequest.getToken());
+        boolean isTokenEmailValid = cambioContrasenaRequest.getEmail().equalsIgnoreCase(tokenEmail);
+        boolean isTokenExpired = tokenService.tokenExpirado(cambioContrasenaRequest.getToken());
+
+        if(!isTokenExpired && isTokenEmailValid) {
+            int filasAfectadas = usuarioRepository.actualizarContrasena(cambioContrasenaRequest.getEmail(), cambioContrasenaRequest.getNuevaContrasena());
+            if (filasAfectadas >= 0) {
+
+                ApiResponse<Optional<Usuario>> res = new ApiResponse<>(
+                        "OK",
+                        "La contraseña ha sido actualizada.",
+                        "Contraseña actualizada.",
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.OK).body(res);
+            }
+        }
+        ApiResponse<Optional<Usuario>> res = new ApiResponse<>(
+                "ERROR",
+                "Token inválido o expirado.",
+                "Error de token.",
+                null
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
     }
 }

@@ -55,4 +55,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     """)
     int actualizarEmpleadoGubVerificado(String email, Boolean valor);
 
+    Optional<Usuario> findByEmail(String email);
+
+    @Modifying
+    @Transactional
+    @Query("""
+    UPDATE Usuario u
+    SET u.contrasena = :nuevaContrasena
+    WHERE u.email = :email
+    """)
+    int actualizarContrasena(String email, String nuevaContrasena);
+
 }

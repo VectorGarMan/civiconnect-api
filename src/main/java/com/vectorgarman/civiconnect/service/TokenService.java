@@ -26,11 +26,11 @@ public class TokenService {
      * @param email email del usuario
      * @return token JWT con caducidad de 48 horas
      */
-    public String generarTokenVerificacion(String email) {
-        long duracion48Horas = 10 * 1000;
-        // 48 * 60 * 60 * 1000; // 48 horas en milisegundos
+    public String generarTokenVerificacion(String email, Long duracion) {
+//        long duracion48Horas = 48 * 60 * 60 * 1000; // 48 horas en milisegundos
+//        // 10 * 1000; // 10 segundos
         Date ahora = new Date();
-        Date expiracion = new Date(ahora.getTime() + duracion48Horas);
+        Date expiracion = new Date(ahora.getTime() + duracion);
 
         return Jwts.builder()
                 .setSubject(email)
@@ -60,8 +60,8 @@ public class TokenService {
             return claims.get("email", String.class);
         } catch (Exception e) {
             System.out.println("Token inválido o expirado: " + e.getMessage());
+            return "";
         }
-        return "";
     }
 
     /**

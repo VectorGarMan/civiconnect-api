@@ -2,12 +2,10 @@ package com.vectorgarman.civiconnect.controller;
 
 // Estos van a ser mis endpoints.
 
-import com.vectorgarman.civiconnect.dto.ApiResponse;
-import com.vectorgarman.civiconnect.dto.LoginRequest;
-import com.vectorgarman.civiconnect.dto.Ubicacion;
-import com.vectorgarman.civiconnect.dto.UsuarioDto;
+import com.vectorgarman.civiconnect.dto.*;
 import com.vectorgarman.civiconnect.entity.Usuario;
 import com.vectorgarman.civiconnect.service.UsuarioService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,11 +16,8 @@ import java.util.Optional;
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
-    private final UsuarioService service;
-
-    public UsuarioController(UsuarioService service) {
-        this.service = service;
-    }
+    @Autowired
+    private UsuarioService service;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<Optional<UsuarioDto>>> login(@RequestBody LoginRequest request) {
@@ -51,6 +46,16 @@ public class UsuarioController {
 
     @GetMapping("/verificarGubernamental")
     public ResponseEntity<String> verificarGubernamental(@RequestParam String email, String token) {
-        return service.verificarGubernamental(email, token);
+        return service.verificarGubernamentalValidToken(email, token);
+    }
+
+    @GetMapping("/recuperarContrasena")
+    public ResponseEntity<ApiResponse<Optional<Usuario>>> recuperarContrasena(@RequestParam String email) {
+        return service.verificarCambioContrasena(email);
+    }
+
+    @PostMapping("/cambiarContrasena")
+    public ResponseEntity<ApiResponse<?>> cambiarContrasena(@RequestBody CambioContrasenaRequest cambioContrasenaRequest) {
+        return service.cambiarContrasena(cambioContrasenaRequest);
     }
 }
