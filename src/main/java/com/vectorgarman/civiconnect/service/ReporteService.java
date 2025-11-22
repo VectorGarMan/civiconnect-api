@@ -2,10 +2,7 @@ package com.vectorgarman.civiconnect.service;
 
 import com.vectorgarman.civiconnect.dto.ApiResponse;
 import com.vectorgarman.civiconnect.entity.*;
-import com.vectorgarman.civiconnect.repository.CategoriaRepository;
-import com.vectorgarman.civiconnect.repository.EstadoReporteRepository;
-import com.vectorgarman.civiconnect.repository.NivelPrioridadRepository;
-import com.vectorgarman.civiconnect.repository.TipoArchivoRepository;
+import com.vectorgarman.civiconnect.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +24,9 @@ public class ReporteService {
 
     @Autowired
     private TipoArchivoRepository tipoArchivoRepository;
+
+    @Autowired
+    private EvidenciaRepository evidenciaRepository;
 
     public ResponseEntity<ApiResponse<List<NivelPrioridad>>> findAllNivelPrioridad() {
         List<NivelPrioridad> listNivelPrioridades = nivelPrioridadRepository.findAll();
@@ -115,6 +115,29 @@ public class ReporteService {
                 "Tipos de archivo obtenidos correctamente.",
                 null,
                 listTiposArchivo
+        );
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    public ResponseEntity<ApiResponse<List<Evidencia>>> findEvidenciasByReporte(Long idreporte) {
+        List<Evidencia> listEvidencias = evidenciaRepository.findByIdreporte(idreporte);
+
+        if (listEvidencias.isEmpty()) {
+            ApiResponse<List<Evidencia>> res = new ApiResponse<>(
+                    "ERROR",
+                    "No se encontraron evidencias.",
+                    "La base de datos no tiene registros de evidencias de ese reporte.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+
+        ApiResponse<List<Evidencia>> res = new ApiResponse<>(
+                "OK",
+                "Evidencias de ese reporte obtenidas correctamente.",
+                null,
+                listEvidencias
         );
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
