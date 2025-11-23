@@ -10,7 +10,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,9 +27,6 @@ public class ReporteService {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
-
-    @Autowired
-    private TipoArchivoRepository tipoArchivoRepository;
 
     @Autowired
     private EvidenciaRepository evidenciaRepository;
@@ -107,29 +107,6 @@ public class ReporteService {
                 "Categorias de reporte obtenidas correctamente.",
                 null,
                 listCategorias
-        );
-
-        return ResponseEntity.status(HttpStatus.OK).body(res);
-    }
-
-    public ResponseEntity<ApiResponse<List<TipoArchivo>>> findAllTiposArchivo() {
-        List<TipoArchivo> listTiposArchivo = tipoArchivoRepository.findAll();
-
-        if (listTiposArchivo.isEmpty()) {
-            ApiResponse<List<TipoArchivo>> res = new ApiResponse<>(
-                    "ERROR",
-                    "No se encontraron tipos de archivo.",
-                    "La base de datos no tiene registros de tipos de archivo.",
-                    null
-            );
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
-        }
-
-        ApiResponse<List<TipoArchivo>> res = new ApiResponse<>(
-                "OK",
-                "Tipos de archivo obtenidos correctamente.",
-                null,
-                listTiposArchivo
         );
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
@@ -316,43 +293,103 @@ public class ReporteService {
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
-    public ResponseEntity<ApiResponse<ReporteDto>> crear(ReporteDto reporteDto) {
-        try {
-            Reporte reporteResponse = reporteRepository.save(reporteDto.getReporte());
+//    public ResponseEntity<ApiResponse<ReporteDto>> crear(Reporte reporte, List<MultipartFile> evidencias) {
+//        try {
+//            Reporte reporteGuardado = reporteRepository.save(reporte);
+//            ReporteDto responseDto = new ReporteDto();
+//            List<Evidencia> evidenciaList = new ArrayList<>();
+//
+//            if (evidencias != null && !evidencias.isEmpty()) {
+//
+//                for (MultipartFile file : evidencias) {
+//                    Evidencia evidencia = new Evidencia();
+//                    evidencia.setIdreporte(reporteGuardado.getIdreporte());
+//                    evidencia.setTipoarchivo(file.getContentType());
+//                    evidencia.setArchivo(file.getBytes());
+//                    Evidencia evidenciaResponse = evidenciaRepository.save(evidencia);
+//                    evidenciaList.add(evidenciaResponse);
+//                }
+//            }
+//
+//            responseDto.setReporte(reporteGuardado);
+//            responseDto.setEvidencias(evidenciaList);
+//
+//            ApiResponse<ReporteDto> res = new ApiResponse<>(
+//                    "OK",
+//                    "Reporte creado correctamente.",
+//                    null,
+//                    responseDto
+//            );
+//
+//            return ResponseEntity.status(HttpStatus.OK).body(res);
+//
+//        } catch (Exception e) {
+//
+//            ApiResponse<ReporteDto> res = new ApiResponse<>(
+//                    "ERROR",
+//                    "No se pudo crear el reporte",
+//                    e.getMessage(),
+//                    null
+//            );
+//
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+//        }
+//    }
 
-            ReporteDto reporteDtoRes = new ReporteDto();
-            reporteDtoRes.setReporte(reporteResponse);
+    @Transactional
+    public ResponseEntity<ApiResponse<ReporteDto>> crearActualizar(
+            Reporte reporte,
+            List<MultipartFile> evidenciasNuevas,
+            List<Long> evidenciasIdsEliminar
+    ) {
+        try {
+
+            boolean esActualizacion = reporte.getIdreporte() != null;
+
+            Reporte reporteGuardado = reporteRepository.save(reporte);
+
+            if (esActualizacion && evidenciasIdsEliminar != null && !evidenciasIdsEliminar.isEmpty()) {
+                evidenciaRepository.deleteAllById(evidenciasIdsEliminar);
+            }
+
+            if (evidenciasNuevas != null && !evidenciasNuevas.isEmpty()) {
+                for (MultipartFile file : evidenciasNuevas) {
+                    Evidencia evidencia = new Evidencia();
+                    evidencia.setIdreporte(reporteGuardado.getIdreporte());
+                    evidencia.setTipoarchivo(file.getContentType());
+                    evidencia.setArchivo(file.getBytes());
+
+                    evidenciaRepository.save(evidencia);
+                }
+            }
+
+            List<Evidencia> evidenciasFinales =
+                    evidenciaRepository.findByIdreporte(reporteGuardado.getIdreporte());
+
+            ReporteDto responseDto = new ReporteDto();
+            responseDto.setReporte(reporteGuardado);
+            responseDto.setEvidencias(evidenciasFinales);
 
             ApiResponse<ReporteDto> res = new ApiResponse<>(
                     "OK",
-                    "Reporte creado correctamente.",
+                    esActualizacion ? "Reporte actualizado correctamente." : "Reporte creado correctamente.",
                     null,
-                    reporteDtoRes
+                    responseDto
             );
 
             return ResponseEntity.status(HttpStatus.OK).body(res);
 
-        } catch (DataIntegrityViolationException e) {
-
-            // Detecta si el mensaje indica que fue por el email duplicado
-            if (e.getMessage().contains("usuario_email_key")) {
-                ApiResponse<Usuario> res = new ApiResponse<>(
-                        "ERROR",
-                        "El correo ya está registrado.",
-                        "El email proporcionado ya existe en la base de datos.",
-                        null
-                );
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(res); // 409
-            }
-
-            // Otros errores de integridad
-            ApiResponse<Usuario> res = new ApiResponse<>(
+        } catch (Exception e) {
+            ApiResponse<ReporteDto> res = new ApiResponse<>(
                     "ERROR",
-                    "Error de integridad de datos.",
-                    e.getMostSpecificCause().getMessage(),
+                    "Error al crear/actualizar el reporte",
+                    e.getMessage(),
                     null
             );
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
         }
     }
+
+
+
 }

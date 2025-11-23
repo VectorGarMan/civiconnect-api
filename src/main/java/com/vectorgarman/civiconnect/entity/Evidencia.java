@@ -1,9 +1,6 @@
 package com.vectorgarman.civiconnect.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
@@ -11,23 +8,15 @@ import lombok.Data;
 @Table(name = "evidencia")
 public class Evidencia {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idevidencia;
 
     @Column(nullable = false)
     private Long idreporte;
 
     @Column(nullable = false)
-    private Long idtipoarchivo;
+    private String tipoarchivo;
 
     @Column(nullable = false)
-    private String nombrearchivo;
-
-    @Column(nullable = false)
-    private String rutaarchivo;
-
-    @Column(nullable = false)
-    private int ordenvisualizacion;
-
-    @Column(nullable = false)
-    private int tamaniobytes;
+    private byte[] archivo;
 }
