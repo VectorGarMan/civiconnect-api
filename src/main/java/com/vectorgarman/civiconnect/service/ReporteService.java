@@ -1,10 +1,10 @@
 package com.vectorgarman.civiconnect.service;
 
-import com.vectorgarman.civiconnect.dto.ApiResponse;
-import com.vectorgarman.civiconnect.dto.ReporteDto;
-import com.vectorgarman.civiconnect.dto.ReporteViewDto;
+import com.vectorgarman.civiconnect.dto.*;
 import com.vectorgarman.civiconnect.entity.*;
 import com.vectorgarman.civiconnect.repository.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -42,6 +41,9 @@ public class ReporteService {
 
     @Autowired
     private ReporteRepository reporteRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public ResponseEntity<ApiResponse<List<NivelPrioridad>>> findAllNivelPrioridad() {
         List<NivelPrioridad> listNivelPrioridades = nivelPrioridadRepository.findAll();
@@ -293,49 +295,6 @@ public class ReporteService {
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
-//    public ResponseEntity<ApiResponse<ReporteDto>> crear(Reporte reporte, List<MultipartFile> evidencias) {
-//        try {
-//            Reporte reporteGuardado = reporteRepository.save(reporte);
-//            ReporteDto responseDto = new ReporteDto();
-//            List<Evidencia> evidenciaList = new ArrayList<>();
-//
-//            if (evidencias != null && !evidencias.isEmpty()) {
-//
-//                for (MultipartFile file : evidencias) {
-//                    Evidencia evidencia = new Evidencia();
-//                    evidencia.setIdreporte(reporteGuardado.getIdreporte());
-//                    evidencia.setTipoarchivo(file.getContentType());
-//                    evidencia.setArchivo(file.getBytes());
-//                    Evidencia evidenciaResponse = evidenciaRepository.save(evidencia);
-//                    evidenciaList.add(evidenciaResponse);
-//                }
-//            }
-//
-//            responseDto.setReporte(reporteGuardado);
-//            responseDto.setEvidencias(evidenciaList);
-//
-//            ApiResponse<ReporteDto> res = new ApiResponse<>(
-//                    "OK",
-//                    "Reporte creado correctamente.",
-//                    null,
-//                    responseDto
-//            );
-//
-//            return ResponseEntity.status(HttpStatus.OK).body(res);
-//
-//        } catch (Exception e) {
-//
-//            ApiResponse<ReporteDto> res = new ApiResponse<>(
-//                    "ERROR",
-//                    "No se pudo crear el reporte",
-//                    e.getMessage(),
-//                    null
-//            );
-//
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-//        }
-//    }
-
     @Transactional
     public ResponseEntity<ApiResponse<ReporteDto>> crearActualizar(
             Reporte reporte,
@@ -390,6 +349,169 @@ public class ReporteService {
         }
     }
 
+    @Transactional
+    public ResponseEntity<ApiResponse<Comentario>> crearActualizarComentario(Comentario comentario) {
+        try {
+            Comentario comentarioResponse = comentarioRepository.save(comentario);
 
+            entityManager.flush();
+            entityManager.refresh(comentarioResponse);
+
+            ApiResponse<Comentario> res = new ApiResponse<>(
+                    "OK",
+                    "Comentario registrado correctamente.",
+                    null,
+                    comentarioResponse
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(res);
+
+        } catch (Exception e) {
+            ApiResponse<Comentario> res = new ApiResponse<>(
+                    "ERROR",
+                    "Error al registrar el comentario.",
+                    e.getMessage(),
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+        }
+    }
+
+    public ResponseEntity<ApiResponse<UsuarioVotaReporte>> votar(UsuarioVotaReporteId votoId) {
+        try {
+
+            if (usuarioVotaReporteRepository.existsById(votoId)) {
+                ApiResponse<UsuarioVotaReporte> res = new ApiResponse<>(
+                        "ERROR",
+                        "Voto duplicado.",
+                        "Este usuario ya ha votado en este reporte.",
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
+            }
+
+            UsuarioVotaReporte voto = new UsuarioVotaReporte();
+            voto.setId(votoId);
+
+            UsuarioVotaReporte votoGuardado = usuarioVotaReporteRepository.save(voto);
+
+            ApiResponse<UsuarioVotaReporte> res = new ApiResponse<>(
+                    "OK",
+                    "Voto registrado correctamente.",
+                    null,
+                    votoGuardado
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(res);
+
+        } catch (DataIntegrityViolationException e) {
+
+            if (e.getMessage().contains("fk_voto_usuario") || e.getMessage().contains("idusuario")) {
+                ApiResponse<UsuarioVotaReporte> res = new ApiResponse<>(
+                        "ERROR",
+                        "Usuario no encontrado.",
+                        "El usuario especificado no existe.",
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+            }
+
+            if (e.getMessage().contains("fk_voto_reporte") || e.getMessage().contains("idreporte")) {
+                ApiResponse<UsuarioVotaReporte> res = new ApiResponse<>(
+                        "ERROR",
+                        "Reporte no encontrado.",
+                        "El reporte especificado no existe.",
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+            }
+
+            // Otros errores de integridad
+            ApiResponse<UsuarioVotaReporte> res = new ApiResponse<>(
+                    "ERROR",
+                    "Error de integridad de datos.",
+                    e.getMostSpecificCause().getMessage(),
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        } catch (Exception e) {
+            ApiResponse<UsuarioVotaReporte> res = new ApiResponse<>(
+                    "ERROR",
+                    "Error al registrar el voto.",
+                    e.getMessage(),
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+        }
+    }
+
+    public ResponseEntity<ApiResponse<String>> eliminarVoto(UsuarioVotaReporteId votoId) {
+        try {
+            if (!usuarioVotaReporteRepository.existsById(votoId)) {
+                ApiResponse<String> res = new ApiResponse<>(
+                        "ERROR",
+                        "Voto no encontrado.",
+                        "No existe un voto con esos datos.",
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+            }
+
+            usuarioVotaReporteRepository.deleteById(votoId);
+
+            ApiResponse<String> res = new ApiResponse<>(
+                    "OK",
+                    "Voto eliminado correctamente.",
+                    null,
+                    "Voto removido"
+            );
+
+            return ResponseEntity.status(HttpStatus.OK).body(res);
+
+        } catch (Exception e) {
+            ApiResponse<String> res = new ApiResponse<>(
+                    "ERROR",
+                    "Error al eliminar el voto.",
+                    e.getMessage(),
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+        }
+    }
+
+    public ResponseEntity<ApiResponse<String>> eliminarComentario(EliminarComentarioRequest request) {
+        try {
+            int filasEliminadas = comentarioRepository.deleteByIdAndUsuario(
+                    request.getIdcomentario(),
+                    request.getIdusuario()
+            );
+
+            if (filasEliminadas == 0) {
+                ApiResponse<String> res = new ApiResponse<>(
+                        "ERROR",
+                        "No se pudo eliminar el comentario.",
+                        "El comentario no existe o no pertenece a este usuario.",
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+            }
+
+            ApiResponse<String> res = new ApiResponse<>(
+                    "OK",
+                    "Comentario eliminado correctamente.",
+                    null,
+                    "Comentario removido"
+            );
+
+            return ResponseEntity.status(HttpStatus.OK).body(res);
+
+        } catch (Exception e) {
+            ApiResponse<String> res = new ApiResponse<>(
+                    "ERROR",
+                    "Error al eliminar el comentario.",
+                    e.getMessage(),
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+        }
+    }
 
 }

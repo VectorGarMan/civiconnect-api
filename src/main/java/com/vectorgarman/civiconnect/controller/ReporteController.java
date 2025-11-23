@@ -2,9 +2,7 @@ package com.vectorgarman.civiconnect.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vectorgarman.civiconnect.dto.ApiResponse;
-import com.vectorgarman.civiconnect.dto.ReporteDto;
-import com.vectorgarman.civiconnect.dto.ReporteViewDto;
+import com.vectorgarman.civiconnect.dto.*;
 import com.vectorgarman.civiconnect.entity.*;
 import com.vectorgarman.civiconnect.service.ReporteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +24,26 @@ public class ReporteController {
     @GetMapping("/obtener")
     public ResponseEntity<ApiResponse<List<ReporteViewDto>>> listReportes(){
         return service.findAllReportes();
+    }
+
+    @PostMapping("/comentario/crearActualizar")
+    public ResponseEntity<ApiResponse<Comentario>> comentar(@RequestBody Comentario comentario) {
+        return service.crearActualizarComentario(comentario);
+    }
+
+    @PostMapping("/votar")
+    public ResponseEntity<ApiResponse<UsuarioVotaReporte>> votar(@RequestBody UsuarioVotaReporteId usuarioVotaReporteId) {
+        return service.votar(usuarioVotaReporteId);
+    }
+
+    @DeleteMapping("/eliminarVoto")
+    public ResponseEntity<ApiResponse<String>> eliminarVoto(@RequestBody UsuarioVotaReporteId usuarioVotaReporteId) {
+        return service.eliminarVoto(usuarioVotaReporteId);
+    }
+
+    @DeleteMapping("/eliminarComentario")
+    public ResponseEntity<ApiResponse<String>> eliminarComentario(@RequestBody EliminarComentarioRequest request) {
+        return service.eliminarComentario(request);
     }
 
     /**
@@ -62,7 +80,6 @@ public class ReporteController {
      * - El endpoint maneja transacciones; si ocurre algún error, se realiza rollback automático.
      * - Las evidencias que no se incluyan en `evidenciasIdsEliminar` y que ya existan, permanecerán intactas.
      */
-
     @PostMapping(
             value = "/crearActualizar",
             consumes = { MediaType.MULTIPART_FORM_DATA_VALUE }

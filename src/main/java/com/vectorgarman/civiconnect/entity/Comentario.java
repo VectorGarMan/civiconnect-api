@@ -32,9 +32,9 @@ public class Comentario {
     @Column(nullable = false)
     private LocalDate fechaactualizacion = LocalDate.now();
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Boolean editado;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Boolean esoficial;
 }
