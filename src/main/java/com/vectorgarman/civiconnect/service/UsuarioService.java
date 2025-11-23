@@ -158,8 +158,8 @@ public class UsuarioService {
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
-    public ResponseEntity<ApiResponse<Optional<UsuarioDto>>> login(LoginRequest loginRequest) {
-        Optional<UsuarioDto> usuarioEncontrado =
+    public ResponseEntity<ApiResponse<Optional<Usuario>>> login(LoginRequest loginRequest) {
+        Optional<Usuario> usuarioEncontrado =
                 usuarioRepository.findByEmailAndContrasena(loginRequest.getEmail(), loginRequest.getContrasena());
 
         boolean verificacionGubernamental = false;
@@ -171,7 +171,7 @@ public class UsuarioService {
         }
 
         if (usuarioEncontrado.isEmpty()) {
-            ApiResponse<Optional<UsuarioDto>> res = new ApiResponse<>(
+            ApiResponse<Optional<Usuario>> res = new ApiResponse<>(
                     "ERROR",
                     "Credenciales incorrectas.",
                     "Usuario o contraseña incorrectos.",
@@ -179,7 +179,7 @@ public class UsuarioService {
             );
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
         } else if (verificacionGubernamental) {
-            ApiResponse<Optional<UsuarioDto>> res = new ApiResponse<>(
+            ApiResponse<Optional<Usuario>> res = new ApiResponse<>(
                     "WARNING",
                     "Usuario gubernamental no verificado.",
                     "Verificación pendiente.",
@@ -187,7 +187,7 @@ public class UsuarioService {
             );
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
         } else {
-            ApiResponse<Optional<UsuarioDto>> res = new ApiResponse<>(
+            ApiResponse<Optional<Usuario>> res = new ApiResponse<>(
                     "OK",
                     "Inicio de sesión exitoso.",
                     null,

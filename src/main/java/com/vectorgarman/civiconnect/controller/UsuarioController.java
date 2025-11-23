@@ -21,7 +21,7 @@ public class UsuarioController {
     private UsuarioService service;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Optional<UsuarioDto>>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<Optional<Usuario>>> login(@RequestBody LoginRequest request) {
         return service.login(request);
     }
 
