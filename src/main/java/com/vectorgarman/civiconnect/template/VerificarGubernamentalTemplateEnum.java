@@ -78,7 +78,7 @@ public enum VerificarGubernamentalTemplateEnum {
                                         <p style='color: #0066cc; font-size: 18px; font-weight: bold; margin: 0 0 30px 0;'>
                                             {EMAIL}
                                         </p>
-                                        <p style='color: #ff6b6b; font-size: 14px; font-weight: bold; margin: 20px 0 0 0;'>
+                                        <p style='color: #ff6b6b; font-size: 14px; font-weight: bold; margin: 20px 0 20px 0;'>
                                             ⏰ Este link expirará en <b>48 horas</b></p>
                                         <a href='{URL_VERIFICACION}'
                                            style='display: inline-block; padding: 15px 40px; background-color: #0066cc; color: #ffffff;
