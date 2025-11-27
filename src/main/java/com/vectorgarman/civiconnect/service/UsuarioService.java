@@ -233,7 +233,7 @@ public class UsuarioService {
         }
         ApiResponse<Optional<Usuario>> res = new ApiResponse<>(
                 "OK",
-                "Usuario recuperado con el email dado.",
+                "Correo enviado al email dado.",
                 "Usuario encontrado.",
                 usuario
         );
