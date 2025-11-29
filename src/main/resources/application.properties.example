@@ -1,0 +1,55 @@
+spring.application.name=civiconnect
+
+# Puerto del servidor
+server.port=8080
+
+# Configuración de base de datos PostgreSQL
+# EN PC
+spring.datasource.url=jdbc:postgresql://localhost:5433/civiconnect
+# EN LAPTOP
+# spring.datasource.url=jdbc:postgresql://localhost:5432/civiconnect
+spring.datasource.username=your_database_username
+spring.datasource.password=your_database_password
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# Configuración JPA/Hibernate
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
+
+# Pool de conexiones (HikariCP)
+spring.datasource.hikari.maximum-pool-size=10
+spring.datasource.hikari.minimum-idle=5
+spring.datasource.hikari.connection-timeout=20000
+
+# Configuración de logging
+logging.level.org.springframework.web=INFO
+logging.level.com.example.api=DEBUG
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+
+# Mail Config
+spring.mail.destinatarioVerifGub=your_recipient_email@example.com
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your_email@gmail.com
+spring.mail.password=your_app_specific_password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# Configuración de Swagger
+springdoc.api-docs.path=/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.enabled=true
+springdoc.swagger-ui.tags-sorter=alpha
+springdoc.swagger-ui.operations-sorter=alpha
+
+# Información de la API
+springdoc.info.title=CiviConnect API
+springdoc.info.description=API para la gestión de reportes ciudadanos
+springdoc.info.version=1.0.0
+
+# JWT tokensecret
+jwt.secret=your_jwt_secret_key_here_minimum_256_bits
