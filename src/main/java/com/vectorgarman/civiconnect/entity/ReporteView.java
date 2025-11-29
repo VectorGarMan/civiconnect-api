@@ -21,6 +21,9 @@ public class ReporteView {
     private String descripcion;
 
     @Column(nullable = false)
+    private String solucionpropuesta;
+
+    @Column(nullable = false)
     private LocalDate fechacreacion = LocalDate.now();
 
     @Column(nullable = false)
