@@ -37,4 +37,7 @@ out/
 .vscode/
 
 ## springboot ##
+
+## Docker ##
+.env
 /src/main/resources/application.properties
