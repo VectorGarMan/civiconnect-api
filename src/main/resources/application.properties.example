@@ -53,3 +53,8 @@ springdoc.info.version=1.0.0
 
 # JWT tokensecret
 jwt.secret=your_jwt_secret_key_here_minimum_256_bits
+
+# Actuator Configuration
+management.endpoints.web.exposure.include=health,info
+management.endpoint.health.show-details=when-authorized
+management.health.defaults.enabled=true
