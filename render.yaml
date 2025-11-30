@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: springboot-gradle-app
+    env: docker
+    region: oregon
+    plan: free
+
+    branch: main
+    autoDeploy: true
+
+    dockerfilePath: ./Dockerfile
+
+    # Updated health check path
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: PORT
+        fromService:
+          type: web
+          name: springboot-gradle-app
+          property: port

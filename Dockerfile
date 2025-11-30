@@ -1,45 +1,50 @@
-# Multi-stage build for Spring Boot application
-
-# Stage 1: Build the application
+# ---- Stage 1: Build the application ----
 FROM gradle:8.5-jdk25 AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy gradle files
+# Copy important Gradle files first for better caching
 COPY build.gradle settings.gradle gradlew ./
 COPY gradle ./gradle
 
-# Copy source code
+# Copy application source
 COPY src ./src
 
-# Build the application (skip tests for faster builds)
+# Build Spring Boot JAR (skip tests)
 RUN ./gradlew clean bootJar -x test --no-daemon
 
-# Stage 2: Create the runtime image
+
+# ---- Stage 2: Runtime image ----
 FROM eclipse-temurin:25-jre
 
-# Set working directory
 WORKDIR /app
 
-# Create a non-root user
+# Install curl for Docker healthcheck (Render needs this)
+USER root
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
 RUN groupadd -r spring && useradd -r -g spring spring
 
-# Copy the built jar from builder stage
+# Copy built JAR from builder image
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# Create directory for tokens (Google Drive API)
+# Create directory for tokens
 RUN mkdir -p /app/tokens && chown -R spring:spring /app
 
 # Switch to non-root user
 USER spring
 
-# Expose the application port
+# Expose port (internal only)
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+# Bind to Render's PORT value (Render injects PORT env var)
+ENV PORT=8080
 
-# Run the application
+# Health check (you said your health path is /api/health)
+# IMPORTANT: Use Render's env PORT, not hardcoded 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:${PORT}/api/health || exit 1
+
+# Run Spring Boot
 ENTRYPOINT ["java", "-jar", "app.jar"]
