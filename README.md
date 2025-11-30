@@ -4,7 +4,7 @@ Spring Boot REST API for the CiviConnect civic engagement platform.
 
 ## Prerequisites
 
-- Java 25 or higher
+- Java 21
 - Gradle 8.x (included via Gradle Wrapper)
 - PostgreSQL database
 
