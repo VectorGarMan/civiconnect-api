@@ -29,7 +29,7 @@ public class OpenApiConfig {
                                 .url("https://www.apache.org/licenses/LICENSE-2.0.html")))
                 .servers(List.of(
                         new Server().url("http://localhost:8080").description("Servidor de desarrollo"),
-                        new Server().url("https://api.civiconnect.com").description("Servidor de producción")
+                        new Server().url("https://civiconnect-api.onrender.com").description("Servidor de producción")
                 ));
     }
 }
