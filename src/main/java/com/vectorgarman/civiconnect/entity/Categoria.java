@@ -18,7 +18,4 @@ public class Categoria {
 
     @Column(nullable = false)
     private String descripcion;
-
-    @Column(nullable = false)
-    private String icono;
 }
