@@ -8,6 +8,18 @@ group = 'com.vectorgarman'
 version = '0.0.1-SNAPSHOT'
 description = 'Project for CiviConnect'
 
+// Configure JAR task
+jar {
+	enabled = true
+	archiveClassifier = ''
+}
+
+// Configure Spring Boot JAR (executable JAR with all dependencies)
+bootJar {
+	archiveFileName = 'civiconnect-api.jar'
+	mainClass = 'com.vectorgarman.civiconnect.CiviconnectApplication'
+}
+
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(25)
