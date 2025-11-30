@@ -1,33 +1,32 @@
-# ----------------------------
-# 1. Build Stage
-# ----------------------------
-FROM eclipse-temurin:25-jdk AS builder
+# ---- Stage 1: Build the application ----
+FROM eclipse-temurin:21-jdk AS builder
 
 WORKDIR /app
 
-# Install Gradle
-RUN apt-get update && apt-get install -y wget unzip && \
-    wget https://services.gradle.org/distributions/gradle-8.7-bin.zip && \
-    unzip gradle-8.7-bin.zip -d /opt && \
-    ln -s /opt/gradle-8.7/bin/gradle /usr/bin/gradle && \
-    rm gradle-8.7-bin.zip
+# Copy Gradle config first (better caching)
+COPY build.gradle settings.gradle gradlew ./
+COPY gradle ./gradle
 
-# Copy project files
+# Download dependencies (cached unless build.gradle changes)
+RUN ./gradlew dependencies --no-daemon
+
+# Copy the source code
 COPY . .
 
-# Build JAR
-RUN gradle clean build --no-daemon
+# Build the Spring Boot jar without tests
+RUN ./gradlew clean bootJar -x test --no-daemon
 
-# ----------------------------
-# 2. Runtime Stage
-# ----------------------------
-FROM eclipse-temurin:25-jre
+
+# ---- Stage 2: Run the Spring Boot application ----
+FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
-# Copy JAR from builder
+# Copy the JAR from builder stage
 COPY --from=builder /app/build/libs/*.jar app.jar
 
+# Expose Spring Boot default port
 EXPOSE 8080
 
+# Start the app
 ENTRYPOINT ["java", "-jar", "app.jar"]
