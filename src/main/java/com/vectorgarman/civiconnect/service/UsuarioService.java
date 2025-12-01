@@ -1,14 +1,8 @@
 package com.vectorgarman.civiconnect.service;
 
-import com.vectorgarman.civiconnect.dto.*;
-import com.vectorgarman.civiconnect.entity.TipoUsuario;
-import com.vectorgarman.civiconnect.entity.Usuario;
-import com.vectorgarman.civiconnect.repository.ColoniaRepository;
-import com.vectorgarman.civiconnect.repository.TipoUsuarioRepository;
-import com.vectorgarman.civiconnect.repository.UsuarioRepository;
-import com.vectorgarman.civiconnect.template.VerificarGubernamentalTemplateEnum;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -17,8 +11,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import com.vectorgarman.civiconnect.dto.ActualizarNombreUsuarioRequest;
+import com.vectorgarman.civiconnect.dto.ApiResponse;
+import com.vectorgarman.civiconnect.dto.CambioContrasenaRequest;
+import com.vectorgarman.civiconnect.dto.LoginRequest;
+import com.vectorgarman.civiconnect.dto.Ubicacion;
+import com.vectorgarman.civiconnect.entity.TipoUsuario;
+import com.vectorgarman.civiconnect.entity.Usuario;
+import com.vectorgarman.civiconnect.repository.ColoniaRepository;
+import com.vectorgarman.civiconnect.repository.TipoUsuarioRepository;
+import com.vectorgarman.civiconnect.repository.UsuarioRepository;
+import com.vectorgarman.civiconnect.template.VerificarGubernamentalTemplateEnum;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 public class UsuarioService {
@@ -87,6 +93,16 @@ public class UsuarioService {
                         null
                 );
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(res); // 409
+            }
+
+            if (e.getMessage().contains("chk_email_formato")) {
+                ApiResponse<Usuario> res = new ApiResponse<>(
+                        "ERROR",
+                        "Email inválido.",
+                        "Error en email, formato incorrecto.",
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
             }
 
             // Otros errores de integridad
