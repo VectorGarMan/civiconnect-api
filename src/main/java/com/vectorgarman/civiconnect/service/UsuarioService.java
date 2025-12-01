@@ -7,12 +7,15 @@ import com.vectorgarman.civiconnect.repository.ColoniaRepository;
 import com.vectorgarman.civiconnect.repository.TipoUsuarioRepository;
 import com.vectorgarman.civiconnect.repository.UsuarioRepository;
 import com.vectorgarman.civiconnect.template.VerificarGubernamentalTemplateEnum;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +35,9 @@ public class UsuarioService {
 
     @Autowired
     private ColoniaRepository coloniaRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Value("${spring.mail.destinatarioVerifGub}")
     private String destinatarioVerifGub;
@@ -308,6 +314,7 @@ public class UsuarioService {
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
+    @Transactional
     public ResponseEntity<ApiResponse<Usuario>> actualizarNombreUsuario(ActualizarNombreUsuarioRequest request) {
         // Verificar que el usuario existe
         Optional<Usuario> usuarioExistente = usuarioRepository.findById(request.getIdusuario());
@@ -336,7 +343,7 @@ public class UsuarioService {
         // Verificar que el nombre de usuario no esté ya en uso por otro usuario
         Optional<Usuario> usuarioConMismoNombre = usuarioRepository.findByNombreusuario(request.getNuevoNombreUsuario());
         
-        if (usuarioConMismoNombre.isPresent() && 
+        if (usuarioConMismoNombre.isPresent() &&
             !usuarioConMismoNombre.get().getIdusuario().equals(request.getIdusuario())) {
             ApiResponse<Usuario> res = new ApiResponse<>(
                     "ERROR",
@@ -362,20 +369,24 @@ public class UsuarioService {
         }
 
         // Si no se proporciona idcolonia, usar la actual del usuario
-        Long idcoloniaFinal = request.getIdcolonia() != null ? 
-                              request.getIdcolonia() : 
+        Long idcoloniaFinal = request.getIdcolonia() != null ?
+                              request.getIdcolonia() :
                               usuarioExistente.get().getIdcolonia();
 
         // Actualizar el nombre de usuario y ubicación
         int filasActualizadas = usuarioRepository.actualizarNombreUsuarioYUbicacion(
-                request.getIdusuario(), 
+                request.getIdusuario(),
                 request.getNuevoNombreUsuario(),
                 idcoloniaFinal
         );
 
         if (filasActualizadas > 0) {
-            // Obtener el usuario actualizado
+            // Forzar la sincronización con la base de datos
+            entityManager.flush();
+            
+            // Obtener el usuario actualizado y refrescarlo desde la BD
             Usuario usuarioActualizado = usuarioRepository.findById(request.getIdusuario()).get();
+            entityManager.refresh(usuarioActualizado);
             
             ApiResponse<Usuario> res = new ApiResponse<>(
                     "OK",
