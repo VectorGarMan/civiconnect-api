@@ -586,4 +586,27 @@ public class ReporteService {
         }
     }
 
+    public ResponseEntity<ApiResponse<Reporte>> findReporteEntityById(Long idreporte) {
+        Reporte reporte = reporteRepository.findById(idreporte).orElse(null);
+
+        if (reporte == null) {
+            ApiResponse<Reporte> res = new ApiResponse<>(
+                    "ERROR",
+                    "No se encontró el reporte.",
+                    "La base de datos no tiene un reporte con ese ID.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+
+        ApiResponse<Reporte> res = new ApiResponse<>(
+                "OK",
+                "Reporte obtenido correctamente.",
+                null,
+                reporte
+        );
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
 }
