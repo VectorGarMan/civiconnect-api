@@ -26,6 +26,11 @@ public class ReporteController {
         return service.findAllReportes();
     }
 
+    @GetMapping("/obtenerPorId/{idreporte}")
+    public ResponseEntity<ApiResponse<ReporteViewDto>> getReporteById(@PathVariable Long idreporte){
+        return service.findReporteById(idreporte);
+    }
+
     @PostMapping("/comentario/crearActualizar")
     public ResponseEntity<ApiResponse<Comentario>> comentar(@RequestBody Comentario comentario) {
         return service.crearActualizarComentario(comentario);

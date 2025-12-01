@@ -336,6 +336,37 @@ public class ReporteService {
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
+    public ResponseEntity<ApiResponse<ReporteViewDto>> findReporteById(Long idreporte) {
+        ReporteView reporteView = reporteViewRepository.findById(idreporte).orElse(null);
+
+        if (reporteView == null) {
+            ApiResponse<ReporteViewDto> res = new ApiResponse<>(
+                    "ERROR",
+                    "No se encontró el reporte.",
+                    "La base de datos no tiene un reporte con ese ID.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+
+        List<Comentario> listComentarios = comentarioRepository.findByIdreporte(idreporte);
+        List<Evidencia> listEvidencias = evidenciaRepository.findByIdreporte(idreporte);
+
+        ReporteViewDto dto = new ReporteViewDto();
+        dto.setReporteView(reporteView);
+        dto.setComentarios(listComentarios);
+        dto.setEvidencias(listEvidencias);
+
+        ApiResponse<ReporteViewDto> res = new ApiResponse<>(
+                "OK",
+                "Reporte obtenido correctamente.",
+                null,
+                dto
+        );
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
     @Transactional
     public ResponseEntity<ApiResponse<ReporteDto>> crearActualizar(
             Reporte reporte,
