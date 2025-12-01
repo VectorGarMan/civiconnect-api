@@ -51,4 +51,16 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     """)
     int actualizarContrasena(String email, String nuevaContrasena);
 
+    Optional<Usuario> findByNombreusuario(String nombreusuario);
+
+    @Modifying
+    @Transactional
+    @Query("""
+    UPDATE Usuario u
+    SET u.nombreusuario = :nuevoNombreUsuario,
+        u.idcolonia = :idcolonia
+    WHERE u.idusuario = :idusuario
+    """)
+    int actualizarNombreUsuarioYUbicacion(Long idusuario, String nuevoNombreUsuario, Long idcolonia);
+
 }

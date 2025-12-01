@@ -64,4 +64,9 @@ public class UsuarioController {
     public ResponseEntity<ApiResponse<List<TipoUsuario>>> listTipoUsuario(){
         return service.findAllTipoUsuario();
     }
+
+    @PutMapping("/actualizarNombreUsuario")
+    public ResponseEntity<ApiResponse<Usuario>> actualizarNombreUsuario(@RequestBody ActualizarNombreUsuarioRequest request) {
+        return service.actualizarNombreUsuario(request);
+    }
 }

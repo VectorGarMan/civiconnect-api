@@ -41,6 +41,4 @@ public class HealthController {
         
         return ResponseEntity.ok(response);
     }
-}
-
-// Made with Bob
+} 

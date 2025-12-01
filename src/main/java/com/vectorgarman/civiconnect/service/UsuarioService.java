@@ -3,6 +3,7 @@ package com.vectorgarman.civiconnect.service;
 import com.vectorgarman.civiconnect.dto.*;
 import com.vectorgarman.civiconnect.entity.TipoUsuario;
 import com.vectorgarman.civiconnect.entity.Usuario;
+import com.vectorgarman.civiconnect.repository.ColoniaRepository;
 import com.vectorgarman.civiconnect.repository.TipoUsuarioRepository;
 import com.vectorgarman.civiconnect.repository.UsuarioRepository;
 import com.vectorgarman.civiconnect.template.VerificarGubernamentalTemplateEnum;
@@ -28,6 +29,9 @@ public class UsuarioService {
 
     @Autowired
     private TipoUsuarioRepository tipoUsuarioRepository;
+
+    @Autowired
+    private ColoniaRepository coloniaRepository;
 
     @Value("${spring.mail.destinatarioVerifGub}")
     private String destinatarioVerifGub;
@@ -302,5 +306,92 @@ public class UsuarioService {
         );
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    public ResponseEntity<ApiResponse<Usuario>> actualizarNombreUsuario(ActualizarNombreUsuarioRequest request) {
+        // Verificar que el usuario existe
+        Optional<Usuario> usuarioExistente = usuarioRepository.findById(request.getIdusuario());
+        
+        if (usuarioExistente.isEmpty()) {
+            ApiResponse<Usuario> res = new ApiResponse<>(
+                    "ERROR",
+                    "Usuario no encontrado.",
+                    "No existe un usuario con el ID proporcionado.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+
+        // Verificar que el nuevo nombre de usuario no esté vacío
+        if (request.getNuevoNombreUsuario() == null || request.getNuevoNombreUsuario().trim().isEmpty()) {
+            ApiResponse<Usuario> res = new ApiResponse<>(
+                    "ERROR",
+                    "Nombre de usuario inválido.",
+                    "El nombre de usuario no puede estar vacío.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        }
+
+        // Verificar que el nombre de usuario no esté ya en uso por otro usuario
+        Optional<Usuario> usuarioConMismoNombre = usuarioRepository.findByNombreusuario(request.getNuevoNombreUsuario());
+        
+        if (usuarioConMismoNombre.isPresent() && 
+            !usuarioConMismoNombre.get().getIdusuario().equals(request.getIdusuario())) {
+            ApiResponse<Usuario> res = new ApiResponse<>(
+                    "ERROR",
+                    "Nombre de usuario no disponible.",
+                    "El nombre de usuario ya está en uso por otro usuario.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
+        }
+
+        // Verificar que la colonia existe si se proporciona
+        if (request.getIdcolonia() != null) {
+            boolean coloniaExiste = coloniaRepository.existsById(request.getIdcolonia());
+            if (!coloniaExiste) {
+                ApiResponse<Usuario> res = new ApiResponse<>(
+                        "ERROR",
+                        "Colonia no encontrada.",
+                        "No existe una colonia con el ID proporcionado.",
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+            }
+        }
+
+        // Si no se proporciona idcolonia, usar la actual del usuario
+        Long idcoloniaFinal = request.getIdcolonia() != null ? 
+                              request.getIdcolonia() : 
+                              usuarioExistente.get().getIdcolonia();
+
+        // Actualizar el nombre de usuario y ubicación
+        int filasActualizadas = usuarioRepository.actualizarNombreUsuarioYUbicacion(
+                request.getIdusuario(), 
+                request.getNuevoNombreUsuario(),
+                idcoloniaFinal
+        );
+
+        if (filasActualizadas > 0) {
+            // Obtener el usuario actualizado
+            Usuario usuarioActualizado = usuarioRepository.findById(request.getIdusuario()).get();
+            
+            ApiResponse<Usuario> res = new ApiResponse<>(
+                    "OK",
+                    "Usuario actualizado correctamente.",
+                    null,
+                    usuarioActualizado
+            );
+            return ResponseEntity.status(HttpStatus.OK).body(res);
+        }
+
+        ApiResponse<Usuario> res = new ApiResponse<>(
+                "ERROR",
+                "No se pudo actualizar el usuario.",
+                "Error al actualizar en la base de datos.",
+                null
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
     }
 }
