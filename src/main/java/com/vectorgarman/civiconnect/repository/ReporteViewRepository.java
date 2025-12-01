@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ReporteViewRepository extends JpaRepository<ReporteView, Long> {
     List<ReporteView> findByIdreporteIn(List<Long> ids);
+    List<ReporteView> findByIdusuariocreador(Long idusuariocreador);
 }

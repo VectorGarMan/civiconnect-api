@@ -122,6 +122,11 @@ public class ReporteController {
         return service.findAllReportesPorVotoUsuario(idusuario);
     }
 
+    @GetMapping("/obtenerPorIdUsuario/{idusuario}")
+    public ResponseEntity<ApiResponse<List<ReporteViewDto>>> listReportesPorIdUsuario(@PathVariable Long idusuario){
+        return service.findAllReportesPorIdUsuario(idusuario);
+    }
+
     @GetMapping("/nivelPrioridad/obtener")
     public ResponseEntity<ApiResponse<List<NivelPrioridad>>> listNivelPrioridad(){
         return service.findAllNivelPrioridad();

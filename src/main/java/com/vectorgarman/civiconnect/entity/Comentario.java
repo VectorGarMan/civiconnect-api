@@ -3,7 +3,7 @@ package com.vectorgarman.civiconnect.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -27,10 +27,10 @@ public class Comentario {
     private String contenido;
 
     @Column(nullable = false)
-    private LocalDate fechacreacion = LocalDate.now();
+    private LocalDateTime fechacreacion = LocalDateTime.now();
 
     @Column(nullable = false)
-    private LocalDate fechaactualizacion = LocalDate.now();
+    private LocalDateTime fechaactualizacion = LocalDateTime.now();
 
     @Column(nullable = true)
     private Boolean editado;

@@ -295,6 +295,47 @@ public class ReporteService {
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
+    public ResponseEntity<ApiResponse<List<ReporteViewDto>>> findAllReportesPorIdUsuario(Long idusuario) {
+        List<ReporteView> listReportesView = reporteViewRepository.findByIdusuariocreador(idusuario);
+
+        if (listReportesView.isEmpty()) {
+            ApiResponse<List<ReporteViewDto>> res = new ApiResponse<>(
+                    "ERROR",
+                    "No se encontraron reportes.",
+                    "La base de datos no tiene registros de reportes de ese usuario.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+
+        List<ReporteViewDto> listReporteDto = listReportesView.stream()
+                .map(reporteView -> {
+
+                    List<Comentario> listComentarios =
+                            comentarioRepository.findByIdreporte(reporteView.getIdreporte());
+
+                    List<Evidencia> listEvidencias =
+                            evidenciaRepository.findByIdreporte(reporteView.getIdreporte());
+
+                    ReporteViewDto dto = new ReporteViewDto();
+                    dto.setReporteView(reporteView);
+                    dto.setComentarios(listComentarios);
+                    dto.setEvidencias(listEvidencias);
+
+                    return dto;
+                })
+                .toList();
+
+        ApiResponse<List<ReporteViewDto>> res = new ApiResponse<>(
+                "OK",
+                "Reportes obtenidos correctamente.",
+                null,
+                listReporteDto
+        );
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
     @Transactional
     public ResponseEntity<ApiResponse<ReporteDto>> crearActualizar(
             Reporte reporte,
