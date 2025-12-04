@@ -26,6 +26,11 @@ public class ReporteController {
         return service.findAllReportes();
     }
 
+    @GetMapping("/estadisticas/obtener")
+    public ResponseEntity<ApiResponse<List<ReporteViewDto>>> listReportes(){
+        return service.findAllReportes();
+    }
+
     @GetMapping("/obtenerPorId/{idreporte}")
     public ResponseEntity<ApiResponse<ReporteViewDto>> getReporteById(@PathVariable Long idreporte){
         return service.findReporteById(idreporte);

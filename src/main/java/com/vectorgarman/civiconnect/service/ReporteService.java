@@ -45,6 +45,32 @@ public class ReporteService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
+    private EstadisticasRepository estadisticasRepository;
+
+    public ResponseEntity<ApiResponse<List<Estadisticas>>> findAllEstadisticas() {
+        Estadisticas estadisticas = estadisticasRepository.findAll();
+
+        if (estadisticasRepository.isEmpty()) {
+            ApiResponse<List<NivelPrioridad>> res = new ApiResponse<>(
+                    "ERROR",
+                    "No se encontraron estadisticas.",
+                    "La base de datos no tiene registros de estadisticas de los reportes.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+        }
+
+        ApiResponse<List<NivelPrioridad>> res = new ApiResponse<>(
+                "OK",
+                "Niveles de prioridad obtenidos correctamente.",
+                null,
+                listNivelPrioridades
+        );
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
     public ResponseEntity<ApiResponse<List<NivelPrioridad>>> findAllNivelPrioridad() {
         List<NivelPrioridad> listNivelPrioridades = nivelPrioridadRepository.findAll();
 
