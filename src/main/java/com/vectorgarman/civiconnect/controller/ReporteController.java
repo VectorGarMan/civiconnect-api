@@ -27,8 +27,8 @@ public class ReporteController {
     }
 
     @GetMapping("/estadisticas/obtener")
-    public ResponseEntity<ApiResponse<List<ReporteViewDto>>> listReportes(){
-        return service.findAllReportes();
+    public ResponseEntity<ApiResponse<List<Estadisticas>>> findAllEstadisticas(){
+        return service.findAllEstadisticas();
     }
 
     @GetMapping("/obtenerPorId/{idreporte}")

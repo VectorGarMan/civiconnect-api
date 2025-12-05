@@ -49,10 +49,10 @@ public class ReporteService {
     private EstadisticasRepository estadisticasRepository;
 
     public ResponseEntity<ApiResponse<List<Estadisticas>>> findAllEstadisticas() {
-        Estadisticas estadisticas = estadisticasRepository.findAll();
+        List<Estadisticas> estadisticas = estadisticasRepository.findAll();
 
-        if (estadisticasRepository.isEmpty()) {
-            ApiResponse<List<NivelPrioridad>> res = new ApiResponse<>(
+        if (estadisticas.isEmpty()) {
+            ApiResponse<List<Estadisticas>> res = new ApiResponse<>(
                     "ERROR",
                     "No se encontraron estadisticas.",
                     "La base de datos no tiene registros de estadisticas de los reportes.",
@@ -61,11 +61,11 @@ public class ReporteService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
         }
 
-        ApiResponse<List<NivelPrioridad>> res = new ApiResponse<>(
+        ApiResponse<List<Estadisticas>> res = new ApiResponse<>(
                 "OK",
-                "Niveles de prioridad obtenidos correctamente.",
+                "Estadísticas obtenidas correctamente.",
                 null,
-                listNivelPrioridades
+                estadisticas
         );
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
